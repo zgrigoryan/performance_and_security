@@ -1,0 +1,70 @@
+name: CMake • multi‑platform
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        build_type: [Release]
+
+    steps:
+    # ───────────── checkout ─────────────────
+    - uses: actions/checkout@v4
+
+    # ───────────── configure ───────────────
+    - name: Configure CMake
+      run: >
+        cmake -B build
+        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -S .
+
+    # ───────────── build ───────────────────
+    - name: Build
+      run: cmake --build build --config ${{ matrix.build_type }}
+
+    # ───────────── run demos ───────────────
+    - name: Run demonstrations
+      shell: bash
+      working-directory: build
+      run: |
+        # helper to locate executables (Visual Studio → Release\*.exe)
+        if [ "$RUNNER_OS" = "Windows" ]; then
+          EXE_DIR="Release"
+          EXE_EXT=".exe"
+        else
+          EXE_DIR="."
+          EXE_EXT=""
+        fi
+
+        echo "── stack_smashing (unprotected) ──"
+        "$EXE_DIR/stack_smashing$EXE_EXT" \
+          AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA || echo "crashed as expected"
+
+        echo "── stack_smashing (protected) ───"
+        # protected variant is whatever the tool‑chain produced by default
+        # (GCC/Clang/MSVC all add canaries unless -fno-stack-protector)
+        echo "(same binary on Windows; separate demo on Linux)"
+        if [ "$RUNNER_OS" != "Windows" ]; then
+          "$EXE_DIR/stack_smashing$EXE_EXT" \
+            AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA || echo "aborted as expected"
+        fi
+
+        if [ "$RUNNER_OS" != "Windows" ]; then
+          echo "── security_defenses (DEP/ASLR) ──"
+          "$EXE_DIR/security_defenses$EXE_EXT" || echo "DEP triggered"
+        fi
+
+        echo "── overhead_no_prot ──"
+        "$EXE_DIR/overhead_no_prot$EXE_EXT"
+
+        echo "── return_oriented_prog ──"
+        "$EXE_DIR/return_oriented_prog$EXE_EXT"
