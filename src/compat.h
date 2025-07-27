@@ -1,5 +1,5 @@
 #pragma once
-/* ───── compiler‑portable helpers ──────────────────────────────────── */
+
 #if defined(_MSC_VER)
   #define NOINLINE  __declspec(noinline)
   #include <intrin.h>
