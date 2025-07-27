@@ -5,7 +5,7 @@
 
 constexpr std::size_t ITERS = 100'000'000;
 
-NOINLINE void empty() { asm volatile("" ::: "memory"); }
+NOINLINE void empty() { cpu_relax(); }
 
 int main() {
     auto bench = [](const char *msg) {
