@@ -53,52 +53,26 @@ jobs:
     - name: Build
       run: cmake --build build --config ${{ matrix.build_type }}
 
-    - name: Run programs
-      shell: bash
+    - name: Run tests
       working-directory: build
+      shell: bash
       run: |
         echo "--- Running stack_smashing ---"
-        if [ "$RUNNER_OS" = "Windows" ]; then
-          ./Release/stack_smashing.exe AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA || echo "crashed as expected"
-        else
-          ./stack_smashing AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA || echo "crashed as expected"
-        fi
+        ./stack_smashing AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA || echo "crashed as expected"
 
         echo "--- Running stack_smashing_protected ---"
-        if [ "$RUNNER_OS" = "Windows" ]; then
-          ./Release/stack_smashing_protected.exe AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA || echo "aborted as expected"
-        else
-          ./stack_smashing_protected AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA || echo "aborted as expected"
-        fi
+        ./stack_smashing_protected AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA || echo "aborted as expected"
 
         echo "--- Running security_defenses ---"
-        if [ "$RUNNER_OS" = "Windows" ]; then
-          ./Release/security_defenses.exe || echo "DEP triggered"
-        else
-          ./security_defenses || echo "DEP triggered"
-        fi
+        ./security_defenses || echo "DEP triggered"
 
         echo "--- Running overhead_no_prot ---"
-        if [ "$RUNNER_OS" = "Windows" ]; then
-          ./Release/overhead_no_prot.exe
-        else
-          ./overhead_no_prot
-        fi
+        ./overhead_no_prot
 
-        echo "--- Compiling + Running overhead_hardened ---"
-        if [ "$RUNNER_OS" = "Windows" ]; then
-          g++ -O2 -fstack-protector-all -D_FORTIFY_SOURCE=2 ../src/security_measure_overhead.cpp -o Release/overhead_hardened.exe
-          ./Release/overhead_hardened.exe
-        else
-          g++ -O2 -fstack-protector-all -D_FORTIFY_SOURCE=2 ../src/security_measure_overhead.cpp -o overhead_hardened
-          ./overhead_hardened
-        fi
+        echo "--- Building overhead_hardened ---"
+        g++ -O2 -fstack-protector-all -D_FORTIFY_SOURCE=2 ../src/security_measure_overhead.cpp -o overhead_hardened
+        echo "--- Running overhead_hardened ---"
+        ./overhead_hardened
 
         echo "--- Running ROP demo ---"
-        if [ "$RUNNER_OS" = "Windows" ]; then
-          ./Release/rop.exe
-        else
-          ./rop
-        fi
-
-
+        ./rop
