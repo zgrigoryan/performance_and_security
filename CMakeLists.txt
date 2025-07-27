@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.15)
 project(PerformanceAndSecurity CXX)
+if (MSVC)
+    add_compile_options(/wd5030)   # “attribute is not recognized”
+endif()
+
 
 # We need C++14 for digit separators
 set(CMAKE_CXX_STANDARD 14)
