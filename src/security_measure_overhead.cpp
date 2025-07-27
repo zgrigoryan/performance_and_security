@@ -1,10 +1,11 @@
 #include <chrono>
 #include <cstdio>
 #include <cstdlib>
+#include "compat.h"
 
 constexpr std::size_t ITERS = 100'000'000;
 
-__attribute__((noinline)) void empty() { asm volatile("" ::: "memory"); }
+NOINLINE void empty() { asm volatile("" ::: "memory"); }
 
 int main() {
     auto bench = [](const char *msg) {
