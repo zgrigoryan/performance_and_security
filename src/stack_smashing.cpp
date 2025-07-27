@@ -1,8 +1,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-
-__attribute__((noinline))
+#include "compat.h"
+NOINLINE
 void secret() {
     puts(">>> secret() reached – execution hijacked!");
     std::exit(0);
